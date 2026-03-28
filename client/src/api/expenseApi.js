@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5000/api/expenses"; // backend URL
+const BASE_URL = "http://localhost:5000/api/expenses";
 
 // Get all expenses
 export const getExpenses = async () => {
@@ -19,3 +19,9 @@ export const deleteExpense = async (id) => {
   const res = await axios.delete(`${BASE_URL}/${id}`);
   return res.data;
 };
+
+// Update expense
+export const updateExpense = async (id, updatedExpense) => {
+  const res = await axios.put(`${BASE_URL}/${id}`, updatedExpense);
+  return res.data;
+};  

@@ -10,14 +10,21 @@ import SmartTips from "../components/SmartTips";
 import { generateSmartTips } from "../utils/aiTips";
 import { motion } from "framer-motion";
 import Footer from "../components/Footer";
-import { getExpenses, addExpense, deleteExpense } from "../api/expenseApi";
+import {
+  getExpenses,
+  addExpense,
+  deleteExpense,
+  updateExpense,
+} from "../api/expenseApi";
+import ExpenseList from "../components/ExpenseList";
 
 export default function Dashboard() {
   const [expenses, setExpenses] = useState([]);
   const [income, setIncome] = useState(0);
   const [budget, setBudget] = useState({});
+  const [editingExpense, setEditingExpense] = useState(null);
 
-  // 🟢 Fetch expenses from backend on load
+  // Fetch expenses from backend on load
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
@@ -30,17 +37,27 @@ export default function Dashboard() {
     fetchExpenses();
   }, []);
 
-  // 🟢 Add expense to backend
+  // Add or update expense
   const handleAddExpense = async (expense) => {
     try {
-      const savedExpense = await addExpense(expense);
-      setExpenses([...expenses, savedExpense]);
+      if (editingExpense) {
+        // Update existing
+        const updated = await updateExpense(editingExpense._id, expense);
+        setExpenses(
+          expenses.map((e) => (e._id === updated._id ? updated : e))
+        );
+        setEditingExpense(null);
+      } else {
+        // Add new
+        const savedExpense = await addExpense(expense);
+        setExpenses([...expenses, savedExpense]);
+      }
     } catch (err) {
-      console.log("Error adding expense:", err);
+      console.log("Error saving expense:", err);
     }
   };
 
-  // 🟢 Delete expense from backend
+  // Delete expense
   const handleDeleteExpense = async (id) => {
     try {
       await deleteExpense(id);
@@ -61,22 +78,30 @@ export default function Dashboard() {
       <div className="p-6 max-w-7xl mx-auto w-full">
         <h2 className="text-2xl font-bold mb-6">Welcome to your Dashboard</h2>
 
-        {/* 💰 Income + Budget */}
+        {/* Income + Budget */}
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           <IncomeForm income={income} setIncome={setIncome} />
           <BudgetForm budget={budget} setBudget={setBudget} />
         </div>
 
-        {/* 💸 Expense Form */}
+        {/* Expense Form + List */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <ExpenseForm onAddExpense={handleAddExpense} />
+          <ExpenseForm
+            onAddExpense={handleAddExpense}
+            editingExpense={editingExpense}
+          />
+          <ExpenseList
+            expenses={expenses}
+            onDelete={handleDeleteExpense}
+            onEdit={(expense) => setEditingExpense(expense)}
+          />
         </motion.div>
 
-        {/* 📊 Stats Cards */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           {[
             { title: "Total Expenses", value: totalExpenses },
@@ -100,7 +125,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* 🤖 Insights + Smart Tips */}
+        {/* Insights + Smart Tips */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -111,14 +136,13 @@ export default function Dashboard() {
           <SmartTips tips={tips} />
         </motion.div>
 
-        {/* 📈 Chart */}
+        {/* Chart */}
         <div className="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-gray-200 mt-6">
           <h3 className="text-lg font-semibold mb-4">Category Breakdown</h3>
           <CategoryChart expenses={expenses} />
         </div>
       </div>
 
-      {/* 📌 Footer */}
       <Footer />
     </div>
   );
