@@ -3,8 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import expenseRoutes from "./routes/expenseRoutes.js";
-
-
+import authRoutes from "./routes/authRoutes.js"; // ✅ FIX: was imported nowhere
 
 dotenv.config();
 
@@ -17,14 +16,17 @@ app.use(express.json());
 // Test Route
 app.get("/", (req, res) => {
   res.send("API is running...");
-
 });
+
+// ✅ FIX: Register auth routes — this was MISSING, causing 404 on /api/auth/login
+app.use("/api/auth", authRoutes);
 app.use("/api/expenses", expenseRoutes);
 
 // Connect MongoDB
-mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("MongoDB Connected"))
-.catch(err => console.log(err));
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.log(err));
 
 // Start Server
 const PORT = process.env.PORT || 5000;

@@ -1,9 +1,9 @@
 import Expense from "../models/Expense.js";
 
-// Add Expense
+// Add Expense — ✅ uses req.userId from protect middleware
 export const addExpense = async (req, res) => {
   try {
-    const expense = new Expense(req.body);
+    const expense = new Expense({ ...req.body, user: req.userId });
     const saved = await expense.save();
     res.status(201).json(saved);
   } catch (error) {
@@ -11,10 +11,10 @@ export const addExpense = async (req, res) => {
   }
 };
 
-// Get All Expenses
+// Get All Expenses — ✅ only returns expenses for the logged-in user
 export const getExpenses = async (req, res) => {
   try {
-    const expenses = await Expense.find().sort({ date: -1 });
+    const expenses = await Expense.find({ user: req.userId }).sort({ date: -1 });
     res.json(expenses);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -31,14 +31,13 @@ export const deleteExpense = async (req, res) => {
   }
 };
 
-
 // Update Expense
 export const updateExpense = async (req, res) => {
   try {
     const updatedExpense = await Expense.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true } // return the updated doc
+      { new: true }
     );
     res.json(updatedExpense);
   } catch (error) {

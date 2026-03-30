@@ -1,27 +1,35 @@
-// components/Navbar.jsx
-import { useNavigate } from "react-router-dom";
-
-export default function Navbar() {
-  const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
+// ✅ Navbar receives user, setUser, and onLoginClick from Dashboard
+// AuthModal is now handled globally in Dashboard — not here
+export default function Navbar({ user, setUser, onLoginClick }) {
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
+    localStorage.clear();
+    setUser(null);
   };
 
   return (
-    <nav className="bg-white/90 backdrop-blur-md shadow-md px-6 py-3 flex justify-between items-center">
-      <h1 className="font-bold text-xl text-blue-600">FinTrack</h1>
-      <div className="flex items-center gap-4">
-        <p className="text-gray-700">Hi, {user?.name}</p>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-        >
-          Logout
-        </button>
+    <nav className="bg-white shadow-md px-6 py-3 flex justify-between items-center sticky top-0 z-40">
+      <h1 className="text-xl font-bold text-blue-600">💰 FinTrack</h1>
+
+      <div>
+        {user ? (
+          <div className="flex items-center gap-4">
+            <span className="text-gray-700 font-medium">Hi, {user.name} 👋</span>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white px-3 py-1.5 rounded hover:bg-red-600 transition text-sm"
+            >
+              Logout
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={onLoginClick}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            Login / Register
+          </button>
+        )}
       </div>
     </nav>
   );
